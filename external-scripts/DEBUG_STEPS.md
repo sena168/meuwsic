@@ -34,6 +34,10 @@
 **Issue**: Manual next/previous stopped playing at boundaries when repeat off  
 **Method**: Simplified navigation logic in both `handleNext()` and `handlePrevious()` to always maintain playing state if was playing
 
+### 9. Fixed Shuffle Mode Auto-Play Behavior
+**Issue**: When shuffle is enabled, songs would stop playing after finishing naturally if repeat mode was 'none'  
+**Method**: Modified `handleEnded()` function to prioritize shuffle mode over repeat mode - when shuffle is on, it always continues to next random song regardless of repeat setting
+
 ## Files Modified
 - `meuwsic/src/components/MusicPlayer.tsx` (All fixes)
 

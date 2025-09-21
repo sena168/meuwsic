@@ -61,8 +61,11 @@ export default function MusicPlayer() {
       if (repeatMode === 'one') {
         audio.currentTime = 0
         audio.play()
+      } else if (isShuffled) {
+        // When shuffle is on, always continue to next random song regardless of repeat mode
+        handleNext()
       } else if (repeatMode === 'none') {
-        // Check if we're at the last song
+        // Check if we're at the last song (only when shuffle is OFF)
         const currentIndex = TRACKS.findIndex(track => track.id === currentTrack.id)
         if (currentIndex === TRACKS.length - 1) {
           // Stay on the last song and stop playing
@@ -97,7 +100,7 @@ export default function MusicPlayer() {
       audio.removeEventListener('pause', handlePause)
       audio.removeEventListener('loadstart', handleLoadStart)
     }
-  }, [currentTrack, repeatMode])
+  }, [currentTrack, repeatMode, isShuffled])
 
   useEffect(() => {
     if (audioRef.current) {
@@ -134,13 +137,14 @@ export default function MusicPlayer() {
     let nextIndex
     
     if (isShuffled) {
+      // Shuffle mode: always pick random song and continue playing
       do {
         nextIndex = Math.floor(Math.random() * TRACKS.length)
       } while (nextIndex === currentIndex && TRACKS.length > 1)
     } else if (repeatMode === 'all') {
       nextIndex = (currentIndex + 1) % TRACKS.length
     } else {
-      // When repeat is 'none', allow navigation but don't auto-play at boundaries
+      // When repeat is 'none' and shuffle is OFF, respect boundaries
       if (currentIndex === TRACKS.length - 1) {
         nextIndex = 0 // Go to first track but don't auto-play
       } else {
@@ -151,8 +155,8 @@ export default function MusicPlayer() {
     const wasPlaying = isPlaying
     setCurrentTrack(TRACKS[nextIndex])
     
-    // Always continue playing if was playing, regardless of boundaries for manual navigation
-    if (wasPlaying) {
+    // For shuffle mode, always continue playing. For others, respect the wasPlaying state
+    if (wasPlaying || isShuffled) {
       setTimeout(async () => {
         try {
           await audioRef.current?.play()
